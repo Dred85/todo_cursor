@@ -12,7 +12,8 @@ tasker/
 ├── PROMPTS.md
 ├── TASK_PARSING_SPEC.md
 ├── backend/          # Python + FastAPI
-├── webapp/          # NodeJS + TypeScript + React
+├── webapp/           # NodeJS + TypeScript + React
+├── tgbot/            # Telegram-бот (aiogram)
 └── docker-compose.yml
 ```
 
@@ -24,6 +25,7 @@ tasker/
 - ⏰ **Отображение сроков** в удобном формате ("завтра в 18:00", "сегодня в 14:30")
 - 🎯 **Статистика** по задачам (всего, к выполнению, выполнено)
 - 📱 **Адаптивный дизайн** для мобильных устройств
+- 🤖 **Telegram-бот** для управления задачами прямо из мессенджера
 
 ## Запуск через Docker Compose
 
@@ -36,10 +38,13 @@ docker compose up --build
 
 После запуска:
 - **Backend API**: `http://localhost:8000`
-  - `GET /api/health` - проверка здоровья сервиса
-  - `POST /api/task` - создание задачи
-  - `GET /api/tasks?user_id=1` - список задач пользователя
-- **WebApp**: `http://localhost:5173` - веб-интерфейс
+  - `GET /api/health` — проверка здоровья сервиса
+  - `POST /api/task` — создание задачи
+  - `GET /api/tasks?user_id=1` — список задач пользователя
+  - `PUT /api/tasks/{id}?user_id=1` — обновление задачи
+  - `DELETE /api/tasks/{id}?user_id=1` — удаление задачи
+- **WebApp**: `http://localhost:5173` — веб-интерфейс
+- **Telegram-бот**: работает автоматически (требуется токен в `.env`)
 
 ## Примеры использования
 
@@ -56,6 +61,50 @@ docker compose up --build
 curl -s -X POST http://localhost:8000/api/task \
   -H 'Content-Type: application/json' \
   -d '{"user_id":1,"timezone":"UTC","text":"Купить билеты завтра 18:00","source":"webapp"}'
+```
+
+## Telegram-бот
+
+### Настройка
+
+1. Создайте бота у [@BotFather](https://t.me/BotFather) командой `/newbot`
+2. Скопируйте полученный токен
+3. Укажите токен в файле `.env` (см. `.env.example`):
+   ```
+   TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+   ```
+4. Перезапустите контейнеры:
+   ```bash
+   docker compose up --build -d
+   ```
+
+### Команды бота
+
+| Команда / кнопка | Описание |
+|---|---|
+| `/start` | Приветствие и главная клавиатура |
+| 📝 **Новая задача** | Создать задачу. Поддерживается умный парсинг дат: «Купить молоко завтра в 10:00» |
+| 📋 **Мои задачи** | Показать список задач с ID, статусами и сроками |
+| ✏️ **Редактировать** | Сменить статус задачи. Формат: `ID статус` (например `5 done`) |
+| 🗑 **Удалить** | Удалить задачу по ID |
+
+### Статусы задач
+
+- `todo` — к выполнению
+- `in_progress` — в работе
+- `done` — выполнена
+
+### Пример использования
+
+```
+Пользователь: 📝 Новая задача
+Бот:          ✏️ Введи текст задачи...
+Пользователь: Сходить в магазин завтра в 18:00
+Бот:          ✅ Задача создана!
+              ID: 12
+              Название: Сходить в магазин
+              Срок: 2026-03-16T18:00:00+03:00
+              Статус: todo
 ```
 
 ## Устранение проблем
@@ -127,5 +176,6 @@ curl -s -X POST http://localhost:8000/api/task \
 
 - **Backend**: Python 3.10+, FastAPI, SQLite, dateparser
 - **Frontend**: React 18, TypeScript, Vite, CSS3
+- **Telegram-бот**: Python 3.11, aiogram 3, aiohttp
 - **Инфраструктура**: Docker, Docker Compose
 
