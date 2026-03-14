@@ -19,6 +19,18 @@ services:
     depends_on:
       - backend
 
+  tgbot:
+    build:
+      context: ./tgbot
+    container_name: tasker_tgbot
+    env_file:
+      - ../.env
+    environment:
+      - TASKER_API_URL=http://tasker_backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   tasker_data:
 
