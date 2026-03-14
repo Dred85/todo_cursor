@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: tasker_backend
+    environment:
+      - TASKER_DB_PATH=/data/tasker.sqlite3
+    volumes:
+      - tasker_data:/data
+    ports:
+      - "8000:8000"
+
+  webapp:
+    build:
+      context: ./webapp
+    container_name: tasker_webapp
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  tasker_data:
+

@@ -1,0 +1,7 @@
+[project]
+name = "tasker-backend"
+version = "0.1.0"
+description = "Tasker backend (FastAPI)"
+requires-python = ">=3.11"
+dependencies = []
+
