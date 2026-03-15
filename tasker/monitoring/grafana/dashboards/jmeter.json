@@ -22,47 +22,39 @@
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"maxAT\" or r._field == \"meanAT\" or r._field == \"minAT\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"maxAT\" or r._field == \"meanAT\" or r._field == \"minAT\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 20, "pointSize": 3, "gradientMode": "scheme" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 20, "pointSize": 3, "gradientMode": "scheme", "spanNulls": true },
           "color": { "mode": "palette-classic" }
         },
         "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "maxAT" },
-            "properties": [{ "id": "displayName", "value": "Max Threads" }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "meanAT" },
-            "properties": [{ "id": "displayName", "value": "Mean Threads" }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "minAT" },
-            "properties": [{ "id": "displayName", "value": "Min Threads" }]
-          }
+          { "matcher": { "id": "byName", "options": "maxAT" }, "properties": [{ "id": "displayName", "value": "Max Threads" }] },
+          { "matcher": { "id": "byName", "options": "meanAT" }, "properties": [{ "id": "displayName", "value": "Mean Threads" }] },
+          { "matcher": { "id": "byName", "options": "minAT" }, "properties": [{ "id": "displayName", "value": "Min Threads" }] }
         ]
       }
     },
     {
-      "title": "🚀 Throughput (hits/s)",
+      "title": "🚀 Total Throughput (req/s)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"count\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> derivative(unit: 1s, nonNegative: true)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"count\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> map(fn: (r) => ({r with _value: float(v: r._value) / 5.0}))\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 25, "pointSize": 3, "gradientMode": "scheme" },
+          "displayName": "Total RPS",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 25, "pointSize": 3, "gradientMode": "scheme", "spanNulls": true },
           "color": { "mode": "fixed", "fixedColor": "green" }
         },
         "overrides": []
@@ -75,14 +67,14 @@
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"avg\" or r._field == \"pct50.0\" or r._field == \"pct90.0\" or r._field == \"pct95.0\" or r._field == \"pct99.0\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"avg\" or r._field == \"pct50.0\" or r._field == \"pct90.0\" or r._field == \"pct95.0\" or r._field == \"pct99.0\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "ms",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 3 },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 3, "spanNulls": true },
           "color": { "mode": "palette-classic" }
         },
         "overrides": [
@@ -95,31 +87,30 @@
       }
     },
     {
-      "title": "❌ Errors (%)",
+      "title": "❌ Error Count",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"countError\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
-          "refId": "errors"
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"countError\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)",
+          "refId": "A"
         },
         {
-          "query": "countErr = from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"countError\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n\ncountAll = from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"count\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n\njoin(tables: {err: countErr, all: countAll}, on: [\"_time\"])\n  |> map(fn: (r) => ({r with _value: if r._value_all > 0.0 then r._value_err / r._value_all * 100.0 else 0.0}))\n  |> keep(columns: [\"_time\", \"_value\"])\n  |> yield(name: \"error_pct\")",
-          "refId": "pct"
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"countError\")\n  |> filter(fn: (r) => r.transaction != \"all\" and r.transaction != \"internal\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"transaction\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)",
+          "refId": "B"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "pointSize": 3 },
-          "color": { "mode": "fixed", "fixedColor": "red" },
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 60, "pointSize": 3, "stacking": { "mode": "normal" }, "spanNulls": true },
+          "color": { "mode": "palette-classic" },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "yellow", "value": 1 },
-              { "color": "red", "value": 5 }
+              { "color": "red", "value": 1 }
             ]
           }
         },
@@ -127,60 +118,90 @@
       }
     },
     {
-      "title": "⏱ Response Times by Sampler (ms)",
+      "title": "📊 Transactions per Second (by sampler)",
+      "description": "Аналог jp@gc - Transactions per Second из JMeter. Показывает TPS каждого семплера (success зелёные, failure красные)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 16 },
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"avg\")\n  |> filter(fn: (r) => r.transaction != \"all\" and r.transaction != \"internal\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"count\")\n  |> filter(fn: (r) => r.transaction != \"all\" and r.transaction != \"internal\")\n  |> filter(fn: (r) => r.statut == \"ok\")\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) / 5.0, _field: r.transaction + \" (success)\"}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"success\")",
           "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ms",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 3 },
-          "color": { "mode": "palette-classic" }
         },
-        "overrides": []
-      }
-    },
-    {
-      "title": "🚀 Throughput by Sampler (hits/s)",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
-      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
-      "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"count\")\n  |> filter(fn: (r) => r.transaction != \"all\" and r.transaction != \"internal\")\n  |> derivative(unit: 1s, nonNegative: true)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
-          "refId": "A"
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"count\")\n  |> filter(fn: (r) => r.transaction != \"all\" and r.transaction != \"internal\")\n  |> filter(fn: (r) => r.statut == \"ko\")\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value) / 5.0, _field: r.transaction + \" (failure)\"}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"failure\")",
+          "refId": "B"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
-          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50, "pointSize": 3, "stacking": { "mode": "normal" } },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 4,
+            "lineInterpolation": "smooth",
+            "showPoints": "auto",
+            "spanNulls": true
+          },
           "color": { "mode": "palette-classic" }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*failure.*" },
+            "properties": [
+              { "id": "custom.drawStyle", "value": "points" },
+              { "id": "custom.pointSize", "value": 8 },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
       }
     },
     {
-      "title": "📈 Min / Max Response Time (ms)",
+      "title": "⏱ Response Times by Sampler (ms)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 26 },
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"min\" or r._field == \"max\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"avg\")\n  |> filter(fn: (r) => r.transaction != \"all\" and r.transaction != \"internal\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.transaction}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "ms",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 3 },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 3, "spanNulls": true, "lineInterpolation": "smooth" },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "📈 Min / Max Response Time (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 34 },
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "targets": [
+        {
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"min\" or r._field == \"max\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "pointSize": 3, "spanNulls": true },
           "color": { "mode": "palette-classic" }
         },
         "overrides": [
@@ -192,18 +213,18 @@
     {
       "title": "📊 Network (bytes/s)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 34 },
       "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
       "targets": [
         {
-          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"rb\" or r._field == \"sb\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> derivative(unit: 1s, nonNegative: true)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+          "query": "from(bucket: \"jmeter\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"jmeter\")\n  |> filter(fn: (r) => r._field == \"rb\" or r._field == \"sb\")\n  |> filter(fn: (r) => r.transaction == \"all\")\n  |> filter(fn: (r) => r.statut == \"all\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> map(fn: (r) => ({r with _value: float(v: r._value) / 5.0}))\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "Bps",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "pointSize": 3 },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "pointSize": 3, "spanNulls": true },
           "color": { "mode": "palette-classic" }
         },
         "overrides": [
@@ -219,7 +240,7 @@
   "templating": {
     "list": [
       {
-        "current": { "selected": false, "text": "InfluxDB", "value": "InfluxDB" },
+        "current": { "selected": false, "text": "InfluxDB-JMeter", "value": "InfluxDB-JMeter" },
         "hide": 0,
         "includeAll": false,
         "name": "DS_INFLUXDB",
