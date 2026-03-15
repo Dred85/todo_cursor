@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.parsing.parser import parse_task_text
 from app.schemas.task import CreateTaskRequest, ErrorResponse, TaskResponse, UpdateTaskRequest
@@ -136,6 +137,13 @@ def create_app() -> FastAPI:
         except Exception as e:
             logger.exception(f"Unexpected error deleting task: {e}")
             raise HTTPException(status_code=500, detail=f"Произошла ошибка: {str(e)}")
+
+    # Prometheus metrics endpoint /metrics
+    Instrumentator(
+        should_group_status_codes=True,
+        should_ignore_untemplated=True,
+        excluded_handlers=["/metrics"],
+    ).instrument(app).expose(app, endpoint="/metrics")
 
     return app
 
