@@ -19,3 +19,15 @@ datasources:
       defaultBucket: metrics
     secureJsonData:
       token: tasker-admin-token
+
+  - name: InfluxDB-JMeter
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    editable: true
+    jsonData:
+      version: Flux
+      organization: tasker
+      defaultBucket: jmeter
+    secureJsonData:
+      token: tasker-admin-token
